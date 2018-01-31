@@ -1,12 +1,7 @@
 package recommender.algorithms.ratingprediction;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Scanner;
-import recommender.ratings.PredictionMatrix;
+import java.io.*;
+import java.util.*;
 import recommender.ratings.TrainingMatrix;
 
 /**
@@ -26,21 +21,12 @@ import recommender.ratings.TrainingMatrix;
  System.out.println(eval.RMSE());
 
  ------------*/
-public class ItemSoftClustering {
+public class ItemSoftClustering extends RatingPredictionBase{
 
-    private TrainingMatrix trainingMatrix;
-    private PredictionMatrix predictionMatrix;
-    private double[][] scoreMatrix;
+    private double[][] predictions;
     private double[][] itemPersistencyMatrix;
     private double[][] contributionMatrix;
     int nClusters;
-    double big;
-    double small;
-    private double dividendo;
-    private double ruj;
-    private int nItems;
-    private int nUsers;
-    private int predictionOption;
     private double[][] bui;
     private double[] bu;
     private double[] bi;
@@ -49,45 +35,16 @@ public class ItemSoftClustering {
     private final int regBu = 15;
     private final int iterations = 10;
 
-    /*     
-     predictionOption
-     0 = all predictions
-     1 = only test    
-     */
+  
     public ItemSoftClustering(String testFile, TrainingMatrix trainingMatrix, int predictionOption, String persistencyFile, int nClusters) {
+        super(testFile, trainingMatrix, predictionOption);
 
-        this.trainingMatrix = trainingMatrix;
-        this.predictionOption = predictionOption;
-        if (predictionOption == 1) {
-            predictionMatrix = new PredictionMatrix(trainingMatrix.getIndexUserDbSystem(), trainingMatrix.getIndexItemDbSystem(), trainingMatrix.getIndexUserSystemDb(), trainingMatrix.getIndexItemSystemDb());
-            fillPredictionMatrix(testFile);
-        }
-        nItems = trainingMatrix.getnItems();
-        nUsers = trainingMatrix.getnUsers();
-        scoreMatrix = new double[nUsers][nItems];
-        fillScoreMatrix();
+       
         this.nClusters = nClusters;
         itemPersistencyMatrix = new double[nItems][this.nClusters];
         contributionMatrix = new double[nItems][this.nClusters];
         fillPersistencyMatrix(persistencyFile);
         trainBaselines();
-    }
-
-    private void fillPredictionMatrix(String testFile) {
-        try {
-            File file = new File(testFile);
-            Scanner scannerFile = new Scanner(file);
-
-            while (scannerFile.hasNextLine()) {
-                String line = scannerFile.nextLine();
-                Scanner scannerLine = new Scanner(line);
-                int user = scannerLine.nextInt();
-                int item = scannerLine.nextInt();
-                predictionMatrix.setValuematrix(trainingMatrix.getIndexUserDbSystem().get(user), trainingMatrix.getIndexItemDbSystem().get(item), 1);
-            }
-        } catch (IOException e) {
-            System.out.println("Erro na leitura do teste.");
-        }
     }
 
     private void fillPersistencyMatrix(String testFile) {
@@ -102,7 +59,9 @@ public class ItemSoftClustering {
                 int cluster = scannerLine.nextInt();
                 double persistency = scannerLine.nextDouble();
                 itemPersistencyMatrix[trainingMatrix.getIndexItemDbSystem().get(item)][cluster] = persistency;
+                scannerLine.close();
             }
+            scannerFile.close();
         } catch (IOException e) {
             System.out.println("Erro na leitura das persistencias.");
         }
@@ -111,7 +70,7 @@ public class ItemSoftClustering {
     private void fillScoreMatrix() {
         for (int i = 0; i < nUsers; i++) {
             for (int j = 0; j < nItems; j++) {
-                scoreMatrix[i][j] = 0;
+                predictions[i][j] = 0;
             }
         }
     }
@@ -213,7 +172,7 @@ public class ItemSoftClustering {
             }
         } else {
             for (int i = 0; i < nItems; i++) {
-                if (predictionMatrix.getValue(user, i) == 1) {
+                if (testMatrix.getValue(user, i) == 1) {
                     generateUserItemScore(user, i);
                 }
             }
@@ -229,9 +188,9 @@ public class ItemSoftClustering {
             sumPersistencies += itemPersistencyMatrix[item][i];
         }
         if (sumContributions == 0) {
-            scoreMatrix[user][item] = bui[user][item];
+            predictions[user][item] = bui[user][item];
         } else {
-            scoreMatrix[user][item] = bui[user][item] + (sumContributions / sumPersistencies);
+            predictions[user][item] = bui[user][item] + (sumContributions / sumPersistencies);
         }
     }
 
@@ -263,30 +222,4 @@ public class ItemSoftClustering {
         return contribution;
 
     }
-
-    public void writeRecommendations(String recomendationPath) {
-
-        try {
-            File recomendation = new File(recomendationPath);
-            if (!recomendation.exists()) {
-                recomendation.createNewFile();
-            }
-
-            FileWriter fileWriter = new FileWriter(recomendation, true);
-            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-            for (int i = 0; i < nUsers; i++) {
-                for (int j = 0; j < nItems; j++) {
-                    if (scoreMatrix[i][j] != 0) {
-                        bufferedWriter.write(trainingMatrix.getIndexUserSystemDb()[i] + " " + trainingMatrix.getIndexItemSystemDb()[j] + " " + scoreMatrix[i][j]);
-                        bufferedWriter.write("\n");
-                    }
-                }
-            }
-            bufferedWriter.close();
-        } catch (IOException e) {
-            System.out.println("Error.");
-        }
-
-    }
-
 }

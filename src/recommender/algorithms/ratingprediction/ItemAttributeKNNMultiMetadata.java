@@ -1,15 +1,6 @@
 package recommender.algorithms.ratingprediction;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Scanner;
-import recommender.ratings.PredictionMatrix;
+import java.util.*;
 import recommender.ratings.TrainingMatrix;
 
 /**
@@ -23,12 +14,8 @@ public class ItemAttributeKNNMultiMetadata extends ItemAttributeKNN {
     private HashMap<Integer, Double> knnFinal;
     int combination;
 
-    /*     
-     predictionOption
-     0 = all predictions
-     1 = only test
-    
-     combination
+    /*      
+     combination:
      1 = intersect Rankings taking the Average Value
      2 = intersect Rankings maintaining the Best Value
      3 = combine Rankings taking the Average Value in ties
@@ -129,7 +116,7 @@ public class ItemAttributeKNNMultiMetadata extends ItemAttributeKNN {
         }
 
         //calcula score final
-        dividendo = 1;
+        dividend = 1;
         //System.out.println(relevantItems.size() + " " + knnPartial1.size() + " " + knnPartial2.size() + " " + knnFinal.size());
         if (knnFinal.size() > 0) {
             //System.out.println("Entrou");
@@ -137,23 +124,23 @@ public class ItemAttributeKNNMultiMetadata extends ItemAttributeKNN {
                 //System.out.println("Item: "+ neighbour.getKey() + "Similarity: " + neighbour.getValue());
                 ruj = trainingMatrix.getValue(user, neighbour.getKey());
                 buj = bui[user][neighbour.getKey()];
-                scoreMatrix[user][item] += (ruj - buj) * neighbour.getValue();
-                dividendo += neighbour.getValue();
+                predictions[user][item] += (ruj - buj) * neighbour.getValue();
+                dividend += neighbour.getValue();
 
             }
-            //System.out.println("Nota: "+ (scoreMatrix[user][item]/dividendo));
-            scoreMatrix[user][item] = bui[user][item] + (scoreMatrix[user][item] / dividendo);
+            //System.out.println("Nota: "+ (predictions[user][item]/dividendo));
+            predictions[user][item] = bui[user][item] + (predictions[user][item] / dividend);
         } else {
-            scoreMatrix[user][item] = bui[user][item];
+            predictions[user][item] = bui[user][item];
         }
-        if (scoreMatrix[user][item] < 1) {
-            scoreMatrix[user][item] = 1;
+        if (predictions[user][item] < 1) {
+            predictions[user][item] = 1;
 
-        } else if (scoreMatrix[user][item] > 5) {
-            scoreMatrix[user][item] = 5;
+        } else if (predictions[user][item] > 5) {
+            predictions[user][item] = 5;
         }
 
-        //System.out.println(" User " + user + " Item " + item + " Score " + scoreMatrix[user][item]);
+        //System.out.println(" User " + user + " Item " + item + " Score " + predictions[user][item]);
     }
 
     private void intersectRankingBestValue(int item, ArrayList<Integer> knnPartial1, ArrayList<Integer> knnPartial2, HashMap<Integer, Double> knnFinal) {

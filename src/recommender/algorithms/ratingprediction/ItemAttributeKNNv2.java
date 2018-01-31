@@ -81,28 +81,28 @@ public class ItemAttributeKNNv2 extends ItemAttributeKNN {
         }
 
         //calcula score final
-        dividendo = 1;
+        dividend = 1;
         if (knn.size() > 0) {
             for (int i = 0; i < knn.size(); i++) {
                 ruj = trainingMatrix.getValue(user, knn.get(i));
                 buj = bui[user][knn.get(i)];
                 
-                scoreMatrix[user][item] += (ruj - buj) * itemxItemSimilarityMatrix[item][knn.get(i)];
-                dividendo += itemxItemSimilarityMatrix[item][knn.get(i)];
-                //System.out.println(scoreMatrix[user][item] + " " + dividendo);
+                predictions[user][item] += (ruj - buj) * itemxItemSimilarityMatrix[item][knn.get(i)];
+                dividend += itemxItemSimilarityMatrix[item][knn.get(i)];
+                //System.out.println(predictions[user][item] + " " + dividend);
             }
-            scoreMatrix[user][item] = bui[user][item] + (scoreMatrix[user][item] / dividendo);
+            predictions[user][item] = bui[user][item] + (predictions[user][item] / dividend);
         }else {
-            scoreMatrix[user][item] = bui[user][item];
+            predictions[user][item] = bui[user][item];
         }
-        if (scoreMatrix[user][item] < 1) {
-            scoreMatrix[user][item] = 1;
+        if (predictions[user][item] < 1) {
+            predictions[user][item] = 1;
 
-        } else if (scoreMatrix[user][item] > 5) {
-            scoreMatrix[user][item] = 5;
+        } else if (predictions[user][item] > 5) {
+            predictions[user][item] = 5;
         }
 
-        //System.out.println(" User " + user + " Item " + item + " Score " + scoreMatrix[user][item]);
+        //System.out.println(" User " + user + " Item " + item + " Score " + predictions[user][item]);
     }
 
 }

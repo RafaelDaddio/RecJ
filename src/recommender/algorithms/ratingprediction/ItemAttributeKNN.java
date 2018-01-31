@@ -1,96 +1,37 @@
 package recommender.algorithms.ratingprediction;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Scanner;
-import recommender.ratings.PredictionMatrix;
-import recommender.ratings.TrainingMatrix;
+import java.io.*;
+import java.util.*;
+import recommender.ratings.*;
 
 /**
  *
  * @author ads
  */
-public class ItemAttributeKNN {
+public class ItemAttributeKNN extends RatingPredictionBase {
 
     protected ArrayList<Integer> relevantItems;
     protected ArrayList<Integer> knn;
     protected int k;
-    protected TrainingMatrix trainingMatrix;
-    protected PredictionMatrix testMatrix;
     protected double[][] itemxItemSimilarityMatrix;
-    protected double[][] scoreMatrix;
     protected double[][] bui;
-    protected double[] bu;
-    protected double[] bi;
+    protected double[] bu, bi;
     protected double mi;
-    protected double big;
-    protected double small;
-    protected double dividendo;
-    protected double ruj;
-    protected double buj;
-    protected int nItems;
-    protected int nUsers;
+    protected double big, small;
     protected int idneighbour;
-    protected int predictionOption;
+    protected double dividend, ruj, buj;
     protected final int regBi = 10;
     protected final int regBu = 15;
     protected final int iterations = 10;
     protected long executionTime;
 
-    /*     
-     predictionOption
-     0 = all predictions
-     1 = only test    
-     */
     public ItemAttributeKNN(String testFile, TrainingMatrix trainingMatrix, int k, int predictionOption, double itemxItemSimilarityMatrix[][]) {
-
+        super(testFile, trainingMatrix, predictionOption);
         relevantItems = new ArrayList<>();
         knn = new ArrayList<>();
-        this.trainingMatrix = trainingMatrix;
         this.k = k;
-        this.predictionOption = predictionOption;
-        if (predictionOption == 1) {
-            testMatrix = new PredictionMatrix(trainingMatrix.getIndexUserDbSystem(), trainingMatrix.getIndexItemDbSystem(), trainingMatrix.getIndexUserSystemDb(), trainingMatrix.getIndexItemSystemDb());
-            fillPredictionMatrix(testFile);
-        }
-        nItems = trainingMatrix.getnItems();
-        nUsers = trainingMatrix.getnUsers();
         this.itemxItemSimilarityMatrix = itemxItemSimilarityMatrix;
-        scoreMatrix = new double[nUsers][nItems];
-        fillScoreMatrix();
         trainBaselines();
-
-    }
-
-    private void fillPredictionMatrix(String testFile) {
-        try {
-            File file = new File(testFile);
-            Scanner scannerFile = new Scanner(file);
-
-            int lines = 0;
-            while (scannerFile.hasNextLine()) {
-                String line = scannerFile.nextLine();
-                Scanner scannerLine = new Scanner(line);
-                int user = scannerLine.nextInt();
-                int item = scannerLine.nextInt();
-                testMatrix.setValuematrix(trainingMatrix.getIndexUserDbSystem().get(user), trainingMatrix.getIndexItemDbSystem().get(item), 1);
-                lines++;
-            }
-            System.out.println(lines + " lines");
-        } catch (IOException e) {
-            System.out.println("Error filling test matrix.");
-        }
-    }
-
-    private void fillScoreMatrix() {
-        for (int i = 0; i < nUsers; i++) {
-            for (int j = 0; j < nItems; j++) {
-                scoreMatrix[i][j] = 0;
-            }
-        }
     }
 
     private void computeMi() {
@@ -236,56 +177,27 @@ public class ItemAttributeKNN {
         }
 
         //calcula score final
-        dividendo = 1;
+        dividend = 1;
         if (knn.size() > 0) {
             for (int i = 0; i < knn.size(); i++) {
                 ruj = trainingMatrix.getValue(user, knn.get(i));
                 buj = bui[user][knn.get(i)];
-                scoreMatrix[user][item] += (ruj - buj) * itemxItemSimilarityMatrix[item][knn.get(i)];
-                dividendo += itemxItemSimilarityMatrix[item][knn.get(i)];
-                //System.out.println(scoreMatrix[user][item] + " " + dividendo);
+                predictions[user][item] += (ruj - buj) * itemxItemSimilarityMatrix[item][knn.get(i)];
+                dividend += itemxItemSimilarityMatrix[item][knn.get(i)];
+                //System.out.println(predictions[user][item] + " " + dividend);
             }
-            scoreMatrix[user][item] = bui[user][item] + (scoreMatrix[user][item] / dividendo);
+            predictions[user][item] = bui[user][item] + (predictions[user][item] / dividend);
         } else {
-            scoreMatrix[user][item] = bui[user][item];
+            predictions[user][item] = bui[user][item];
         }
-        if (scoreMatrix[user][item] < 1) {
-            scoreMatrix[user][item] = 1;
+        if (predictions[user][item] < 1) {
+            predictions[user][item] = 1;
 
-        } else if (scoreMatrix[user][item] > 5) {
-            scoreMatrix[user][item] = 5;
-        }
-
-        //System.out.println(" User " + user + " Item " + item + " Score " + scoreMatrix[user][item]);
-    }
-
-    public void writeRecommendations(String recomendationPath) {
-
-        try {
-            File recomendation = new File(recomendationPath);
-            if (!recomendation.exists()) {
-                recomendation.createNewFile();
-            } else {
-                recomendation.delete();
-                recomendation.createNewFile();
-            }
-
-            FileWriter fileWriter = new FileWriter(recomendation, true);
-            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-            for (int i = 0; i < nUsers; i++) {
-                for (int j = 0; j < nItems; j++) {
-                    if (scoreMatrix[i][j] != 0) {
-                        bufferedWriter.write(trainingMatrix.getIndexUserSystemDb()[i] + " " + trainingMatrix.getIndexItemSystemDb()[j] + " " + scoreMatrix[i][j]);
-                        bufferedWriter.write("\n");
-                    }
-                }
-                bufferedWriter.flush();
-            }
-            bufferedWriter.close();
-        } catch (IOException e) {
-            System.out.println("Error.");
+        } else if (predictions[user][item] > 5) {
+            predictions[user][item] = 5;
         }
 
+        //System.out.println(" User " + user + " Item " + item + " Score " + predictions[user][item]);
     }
 
     /**

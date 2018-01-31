@@ -1,13 +1,6 @@
 package recommender.algorithms.ratingprediction;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Scanner;
 import recommender.metadata.Metadata;
-import recommender.ratings.PredictionMatrix;
 import recommender.ratings.TrainingMatrix;
 
 /**
@@ -29,14 +22,10 @@ import recommender.ratings.TrainingMatrix;
  System.out.println(eval.RMSE());
         
  ------------*/
+public class ItemNSVD1 extends RatingPredictionBase {
 
-public class ItemNSVD1 {
-
-    private int factors = 10;
-    private TrainingMatrix rui;
-    private PredictionMatrix testMatrix;
     private Metadata x;
-    private double[][] predictions;
+    private int factors = 10;
     private double[][] p;
     private double[][] q;
     private double[][] w;
@@ -45,92 +34,31 @@ public class ItemNSVD1 {
     private double[] d;
     private double learningRate = 0.01, learningRate2 = 0.01;
     private double lambda = 0.015, lambda2 = 0.015;
-    private int nUser, nItem, nMetadata, nEpochs = 30, n2 = 10;
+    private int nMetadata, nEpochs = 30, n2 = 10;
     private double diffRmse = 100;
 
-    public ItemNSVD1(TrainingMatrix trainingMatrix, String testFile, Metadata x, int predictionOption, int factors, int learningRate, int learningRate2, int lambda, int lambda2) {
-        this.rui = trainingMatrix;        
-        nUser = rui.getnUsers();
-        nItem = rui.getnItems();
-        if (predictionOption == 1) {
-            testMatrix = new PredictionMatrix(trainingMatrix.getIndexUserDbSystem(), trainingMatrix.getIndexItemDbSystem(), trainingMatrix.getIndexUserSystemDb(), trainingMatrix.getIndexItemSystemDb());
-            fillPredictionMatrix(testFile);
-        }
-        predictions = new double[nUser][nItem];
-        this.factors = factors;
-        this.learningRate = learningRate;
-        this.learningRate2 = learningRate2;
-        this.lambda = lambda;
-        this.lambda = lambda2;
-        this.x = x;
-        nMetadata = x.getMetadataSize();
-        instantiateModel();
-        train();
-    }
-
     public ItemNSVD1(TrainingMatrix trainingMatrix, String testFile, Metadata x, int predictionOption) {
-        this.rui = trainingMatrix;        
-        nUser = rui.getnUsers();
-        nItem = rui.getnItems();
-        if (predictionOption == 1) {
-            testMatrix = new PredictionMatrix(trainingMatrix.getIndexUserDbSystem(), trainingMatrix.getIndexItemDbSystem(), trainingMatrix.getIndexUserSystemDb(), trainingMatrix.getIndexItemSystemDb());
-            fillPredictionMatrix(testFile);
-        }
-        predictions = new double[nUser][nItem];
+        super(testFile, trainingMatrix, predictionOption);
         this.x = x;
         nMetadata = x.getMetadataSize();
         instantiateModel();
         train();
-    }
-    
-    public ItemNSVD1(TrainingMatrix trainingMatrix, String testFile, Metadata x, int predictionOption, int factors) {
-        this.rui = trainingMatrix;        
-        nUser = rui.getnUsers();
-        nItem = rui.getnItems();
-        if (predictionOption == 1) {
-            testMatrix = new PredictionMatrix(trainingMatrix.getIndexUserDbSystem(), trainingMatrix.getIndexItemDbSystem(), trainingMatrix.getIndexUserSystemDb(), trainingMatrix.getIndexItemSystemDb());
-            fillPredictionMatrix(testFile);
-        }
-        predictions = new double[nUser][nItem];
-        this.factors = factors;
-        this.x = x;
-        nMetadata = x.getMetadataSize();
-        instantiateModel();
-        train();
-    }
-
-    private void fillPredictionMatrix(String testFile) {
-        try {
-            File file = new File(testFile);
-            Scanner scannerFile = new Scanner(file);
-
-            while (scannerFile.hasNextLine()) {
-                String line = scannerFile.nextLine();
-                Scanner scannerLine = new Scanner(line);
-                int user = scannerLine.nextInt();
-                int item = scannerLine.nextInt();
-                double rating = scannerLine.nextDouble();
-                testMatrix.setValuematrix(rui.getIndexUserDbSystem().get(user), rui.getIndexItemDbSystem().get(item), 1);
-            }
-        } catch (IOException e) {
-            System.out.println("Test file NOT FOUND.");
-        }
     }
 
     private void instantiateModel() {
-        p = new double[nUser][factors];
-        q = new double[nItem][factors];
+        p = new double[nUsers][factors];
+        q = new double[nItems][factors];
         w = new double[nMetadata][factors];
-        b = new double[nUser];
-        c = new double[nItem];
-        d = new double[nItem];
+        b = new double[nUsers];
+        c = new double[nItems];
+        d = new double[nItems];
 
-        for (int i = 0; i < nUser; i++) {
+        for (int i = 0; i < nUsers; i++) {
             for (int j = 0; j < factors; j++) {
                 p[i][j] = Math.random();
             }
         }
-        for (int i = 0; i < nItem; i++) {
+        for (int i = 0; i < nItems; i++) {
             for (int j = 0; j < factors; j++) {
                 q[i][j] = Math.random();
             }
@@ -140,14 +68,14 @@ public class ItemNSVD1 {
                 w[i][j] = Math.random();
             }
         }
-        for (int i = 0; i < nUser; i++) {
+        for (int i = 0; i < nUsers; i++) {
             b[i] = Math.random();
         }
-        for (int i = 0; i < nItem; i++) {
+        for (int i = 0; i < nItems; i++) {
             c[i] = Math.random();
         }
 
-        for (int i = 0; i < nItem; i++) {
+        for (int i = 0; i < nItems; i++) {
             for (int l = 0; l < nMetadata; l++) {
                 d[i] += x.getMatrix()[i][l] * x.getMatrix()[i][l];
             }
@@ -162,7 +90,7 @@ public class ItemNSVD1 {
 
     private void computeQ() {
         double qTemp = 0;
-        for (int i = 0; i < nItem; i++) {
+        for (int i = 0; i < nItems; i++) {
             for (int k = 0; k < factors; k++) {
                 qTemp = 0;
                 for (int l = 0; l < nMetadata; l++) {
@@ -198,13 +126,13 @@ public class ItemNSVD1 {
 
     private void updateW() {
         double xWTemp = 0;
-        for (int i = 0; i < nItem; i++) {
+        for (int i = 0; i < nItems; i++) {
             double e[] = new double[factors];
             for (int k = 0; k < factors; k++) {
                 xWTemp = 0;
-                for (int l = 0; l < nMetadata; l++) {                    
+                for (int l = 0; l < nMetadata; l++) {
                     if (x.getMatrix()[i][l] != 0) {
-                        xWTemp +=  x.getMatrix()[i][l] * w[l][k];
+                        xWTemp += x.getMatrix()[i][l] * w[l][k];
                     }
                 }
                 e[k] = q[i][k] - xWTemp;
@@ -213,7 +141,7 @@ public class ItemNSVD1 {
                 for (int k = 0; k < factors; k++) {
                     double DXiE = d[i] * x.getMatrix()[i][l] * e[k];
                     w[l][k] += learningRate2 * (DXiE - lambda2 * w[l][k]);
-                    }
+                }
             }
         }
     }
@@ -221,31 +149,31 @@ public class ItemNSVD1 {
     private void train() {
         long recStarTime = System.currentTimeMillis();
         double eui, rmse, oldRmse = 10000;
-        int count = 0, count2 = 0;
-        while (diffRmse > 0.001 && count2 < nEpochs) {
+        int dividend = 0, countEpoch = 0;
+        while (diffRmse > 0.001 && countEpoch < nEpochs) {
             rmse = 0;
-            count = 0;
+            dividend = 0;
             computeQ();
-            for (int u = 0; u < rui.getUserInteractionLists().size(); u++) {
-                for (int i = 0; i < rui.getUserInteractionLists().get(u).size(); i++) {
-                    int item = rui.getUserInteractionLists().get(u).get(i);
-                    eui = rui.getMatrix()[u][item] - predict(u, item);
+            for (int u = 0; u < trainingMatrix.getUserInteractionLists().size(); u++) {
+                for (int i = 0; i < trainingMatrix.getUserInteractionLists().get(u).size(); i++) {
+                    int item = trainingMatrix.getUserInteractionLists().get(u).get(i);
+                    eui = trainingMatrix.getMatrix()[u][item] - predict(u, item);
                     //System.out.println(rmse+ "+= " + eui + " * " + eui);
                     rmse += eui * eui;
-                    
-                    count++;
+
+                    dividend++;
                     update(eui, u, item);
                 }
             }
-            rmse = Math.sqrt(rmse / count);
-            System.out.println(count2 + ": " + rmse);
+            rmse = Math.sqrt(rmse / dividend);
+            System.out.println(countEpoch + ": " + rmse);
             diffRmse = oldRmse - rmse;
             oldRmse = rmse;
             for (int i = 0; i < n2; i++) {
                 updateW();
             }
             computeQ();
-            count2++;
+            countEpoch++;
         }
         long recEndTime = System.currentTimeMillis();
         System.out.println("Training time: " + (recEndTime - recStarTime));
@@ -253,9 +181,8 @@ public class ItemNSVD1 {
 
     public void recommender() {
         long recStarTime = System.currentTimeMillis();
-        for (int i = 0; i < nUser; i++) {
+        for (int i = 0; i < nUsers; i++) {
             recommendItems(i);
-            //System.out.println("Recomendou para usuário " + i);
         }
         long recEndTime = System.currentTimeMillis();
         System.out.println("Test time: " + (recEndTime - recStarTime));
@@ -263,36 +190,68 @@ public class ItemNSVD1 {
 
     private void recommendItems(int user) {
         double rmse = 0, eui;
-        for (int i = 0; i < nItem; i++) {
-            if (testMatrix.getValue(user, i) == 1) {
-                predictions[user][i] = predict(user, i);
+        if (predictionOption == 0) {
+            for (int i = 0; i < nItems; i++) {
+                if (trainingMatrix.getValue(user, i) == -1) {
+                    predictions[user][i] = predict(user, i);
+                }
+            }
+        } else {
+            for (int i = 0; i < nItems; i++) {
+                if (testMatrix.getValue(user, i) == 1) {
+                    predictions[user][i] = predict(user, i);
+                }
             }
         }
 
     }
 
-    public void writeRecommendations(String recomendationPath) {
+    /**
+     * @param factors the factors to set
+     */
+    public void setFactors(int factors) {
+        this.factors = factors;
+    }
 
-        try {
-            File recomendation = new File(recomendationPath);
-            if (!recomendation.exists()) {
-                recomendation.createNewFile();
-            }
+    /**
+     * @param learningRate the learningRate to set
+     */
+    public void setLearningRate(double learningRate) {
+        this.learningRate = learningRate;
+    }
 
-            FileWriter fileWriter = new FileWriter(recomendation, true);
-            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-            for (int u = 0; u < nUser; u++) {
-                for (int i = 0; i < nItem; i++) {
-                    if (predictions[u][i] != 0) {
-                        bufferedWriter.write(rui.getIndexUserSystemDb()[u] + " " + rui.getIndexItemSystemDb()[i] + " " + predictions[u][i]);
-                        bufferedWriter.write("\n");
-                    }
-                }
-            }
-            bufferedWriter.close();
-        } catch (IOException e) {
-            System.out.println("Error writing recommenations.");
-        }
+    /**
+     * @param learningRate2 the learningRate2 to set
+     */
+    public void setLearningRate2(double learningRate2) {
+        this.learningRate2 = learningRate2;
+    }
 
+    /**
+     * @param lambda the lambda to set
+     */
+    public void setLambda(double lambda) {
+        this.lambda = lambda;
+    }
+
+    /**
+     * @param lambda2 the lambda2 to set
+     */
+    public void setLambda2(double lambda2) {
+        this.lambda2 = lambda2;
+    }
+
+    /**
+     * @param nEpochs the nEpochs to set
+     */
+    public void setnEpochs(int nEpochs) {
+        this.nEpochs = nEpochs;
+    }
+
+    /**
+     * @param n2 the n2 to set
+     */
+    public void setN2(int n2) {
+        this.n2 = n2;
     }
 }
