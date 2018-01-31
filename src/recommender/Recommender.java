@@ -9,7 +9,7 @@ import java.io.*;
 
 /**
  *
- * @author rafaeldaddio
+ * @author Rafael D'Addio
  * 
  * This is the main class for the RecJ framework. 
  * For its current version visit: https://github.com/RafaelDaddio/RecJ
