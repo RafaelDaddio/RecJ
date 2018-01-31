@@ -10,7 +10,6 @@ import recommender.metadata.Metadata;
 import recommender.metrics.Cosine;
 import recommender.metrics.Pearson;
 import recommender.metrics.SimilarityMeasures;
-import recommender.metrics.WordNetSemanticSimilarity;
 import recommender.ratings.PredictionMatrix;
 import recommender.ratings.RatingMatrix;
 import recommender.ratings.TrainingMatrix;

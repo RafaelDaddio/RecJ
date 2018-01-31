@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package recommender.algorithms.ratingprediction;
 
 import java.io.BufferedWriter;
@@ -18,6 +13,19 @@ import recommender.ratings.TrainingMatrix;
  *
  * @author rafaeldaddio
  */
+/*------------ 
+
+ Usage example: ItemSoftClustering
+      
+ DatabaseMatrix dbMatrix = new DatabaseMatrix(databaseFile);
+ TrainingMatrix training = new TrainingMatrix(trainFile, dbMatrix);
+ ItemSoftClustering i = new ItemSoftClustering(testFile, training, 1, persistencyFile, 7);
+ i.recommend();
+ i.writeRecommendations(outputFile);
+ RatingPredictionMetrics eval = new RatingPredictionMetrics(testFile, outputFile);
+ System.out.println(eval.RMSE());
+
+ ------------*/
 public class ItemSoftClustering {
 
     private TrainingMatrix trainingMatrix;

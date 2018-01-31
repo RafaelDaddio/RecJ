@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package recommender.algorithms.ratingprediction;
 
 import java.io.BufferedWriter;
@@ -19,6 +14,22 @@ import recommender.ratings.TrainingMatrix;
  *
  * @author rafaeldaddio
  */
+/*----------
+
+ Usage example: ItemNSVD1
+                
+ DatabaseMatrix dbMatrix = new DatabaseMatrix(matrixFile); //le base de dados completa e seta matriz
+ TrainingMatrix training = new TrainingMatrix(train, dbMatrix);
+ String metadataFile = "/home/rafaeldaddio/Documents/ExperimentoSAC/Baseline/item_genre2.txt"; //le representações de item e/ou usuário
+ Metadata metadata = new Metadata(metadataFile, dbMatrix.getIndexItemDbSystem());
+ ItemNSVD1 i = new ItemNSVD1(training, test, metadata, 1, k); //k = numero de fatores
+ i.recommender();
+ i.writeRecommendations("/media/rafaeldaddio/e76ea905-7a8d-4280-96cb-c9781fced728/recItemNSVD1.dat");
+ RatingPredictionMetrics eval = new RatingPredictionMetrics(test, "/media/rafaeldaddio/e76ea905-7a8d-4280-96cb-c9781fced728/recItemNSVD1.dat");
+ System.out.println(eval.RMSE());
+        
+ ------------*/
+
 public class ItemNSVD1 {
 
     private int factors = 10;

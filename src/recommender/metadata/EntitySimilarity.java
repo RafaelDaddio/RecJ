@@ -12,7 +12,6 @@ import java.io.IOException;
 import recommender.metrics.Cosine;
 import recommender.metrics.Pearson;
 import recommender.metrics.SimilarityMeasures;
-import recommender.metrics.WordNetSemanticSimilarity;
 import recommender.ratings.DatabaseMatrix;
 
 /**
@@ -24,7 +23,7 @@ public class EntitySimilarity {
     private Metadata metadata;
     private int[][] itemxItemNfeatures;
     private double[][] itemxItemSimilarityMatrix;
-    private SimilarityMeasures dist;
+    private SimilarityMeasures sim;
     private final int regNeighbor = 100;
 
     /*
@@ -33,20 +32,17 @@ public class EntitySimilarity {
      1 = pearson
      2 = semanticSimilarity
      */
-    public EntitySimilarity(Metadata metadata, int similarityOption, String termSimilarityMatrixFile) {
+    public EntitySimilarity(Metadata metadata, int similarityOption) {
 
         this.metadata = metadata;
         itemxItemSimilarityMatrix = new double[metadata.getEntitySize()][metadata.getEntitySize()];
         itemxItemNfeatures = new int[metadata.getEntitySize()][metadata.getEntitySize()];
         switch (similarityOption) {
             case 0:
-                dist = new Cosine();
+                sim = new Cosine();
                 break;
             case 1:
-                dist = new Pearson();
-                break;
-            case 2:
-                dist = new WordNetSemanticSimilarity(termSimilarityMatrixFile, metadata);
+                sim = new Pearson();
                 break;
             default:
                 System.out.println("Invalid similarity");
@@ -90,7 +86,7 @@ public class EntitySimilarity {
             for (int j = 0; j <= i; j++) {
                 if (i != j) {
                     nfeatures = itemxItemNfeatures[i][j];
-                    itemxItemSimilarityMatrix[i][j] = (nfeatures / (nfeatures + regNeighbor)) * dist.calcSimilarity(metadata.getEntity(i), metadata.getEntity(j));
+                    itemxItemSimilarityMatrix[i][j] = (nfeatures / (nfeatures + regNeighbor)) * sim.calcSimilarity(metadata.getEntity(i), metadata.getEntity(j));
                     itemxItemSimilarityMatrix[j][i] = getItemxItemSimilarityMatrix()[i][j];
                 } else {
                     itemxItemSimilarityMatrix[i][j] = 0;
