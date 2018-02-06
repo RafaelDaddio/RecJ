@@ -6,7 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
-import recommender.ratings.PredictionMatrix;
+import recommender.ratings.TestMatrix;
 import recommender.ratings.TrainingMatrix;
 
 /**

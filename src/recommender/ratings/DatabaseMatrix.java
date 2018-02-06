@@ -1,21 +1,22 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package recommender.ratings;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Locale;
-import java.util.Scanner;
+import java.io.*;
+import java.util.*;
 
 /**
- *
- * @author rafaeldaddio
+ * Class that converts and stores user and item dataset and internal IDs
+ * 
+ * This class is required in order to construct training and test matrices. Extends RatingsMatrix class.
+ * 
+ * @author Rafael D'Addio
  */
 public class DatabaseMatrix extends RatingMatrix {
 
+    /**
+     * Constructor
+     * 
+     * @param matrixFile the full dataset file
+     */
     public DatabaseMatrix(String matrixFile) {
         super();
         convertUserItemID(matrixFile);
@@ -26,6 +27,11 @@ public class DatabaseMatrix extends RatingMatrix {
         fillUserItemIndexArray();
     }
 
+    /**
+     * Converts user and items dataset IDs to an internal representation.
+     * 
+     * @param ratingsFile the full dataset file
+     */
     private void convertUserItemID(String ratingsFile) {
         int uCount = 0;
         int iCount = 0;
@@ -54,6 +60,9 @@ public class DatabaseMatrix extends RatingMatrix {
         }
     }
 
+    /**
+     * Fills the arrays responsible to convert internal representation to dataset IDs 
+     */
     private void fillUserItemIndexArray() {
 
         for (Integer key : getIndexUserDbSystem().keySet()) {

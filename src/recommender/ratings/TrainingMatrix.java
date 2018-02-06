@@ -6,11 +6,17 @@ import java.util.Locale;
 import java.util.Scanner;
 
 /**
- *
- * @author rafaeldaddio
+ * Class that implements the training matrix
+ * 
+ * @author Rafael D'Addio
  */
 public class TrainingMatrix extends RatingMatrix {
 
+    /**
+     *
+     * @param trainingFile the file containing the training user/item pairs
+     * @param dbMatrix the DatabaseMatrixobject containing the dataset->internal representation mapping
+     */
     public TrainingMatrix(String trainingFile, DatabaseMatrix dbMatrix) {
         super();
         
@@ -27,6 +33,11 @@ public class TrainingMatrix extends RatingMatrix {
         createItemLists();
     }   
 
+    /**
+     * Populates the rating matrix with the user-item pairs in the training
+     * 
+     * @param ratingsFile the training file
+     */
     private void populateRatingMatrix(String ratingsFile) {
 
         try {

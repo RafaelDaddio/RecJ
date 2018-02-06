@@ -14,7 +14,7 @@ import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import recommender.ratings.PredictionMatrix;
+import recommender.ratings.TestMatrix;
 import recommender.ratings.TrainingMatrix;
 
 /**

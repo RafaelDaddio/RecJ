@@ -16,7 +16,7 @@ import recommender.ratings.*;
 public class RatingPredictionBase {
 
     protected TrainingMatrix trainingMatrix;
-    protected PredictionMatrix testMatrix;
+    protected TestMatrix testMatrix;
     protected double[][] predictions;
     protected int nItems, nUsers;
     protected int predictionOption;
@@ -30,7 +30,7 @@ public class RatingPredictionBase {
         this.trainingMatrix = trainingMatrix;
         this.predictionOption = predictionOption;
         if (predictionOption == 1) {
-            testMatrix = new PredictionMatrix(trainingMatrix.getIndexUserDbSystem(), trainingMatrix.getIndexItemDbSystem(), trainingMatrix.getIndexUserSystemDb(), trainingMatrix.getIndexItemSystemDb());
+            testMatrix = new TestMatrix(trainingMatrix.getIndexUserDbSystem(), trainingMatrix.getIndexItemDbSystem(), trainingMatrix.getIndexUserSystemDb(), trainingMatrix.getIndexItemSystemDb());
             fillPredictionMatrix(testFile);
         }
         nItems = trainingMatrix.getnItems();

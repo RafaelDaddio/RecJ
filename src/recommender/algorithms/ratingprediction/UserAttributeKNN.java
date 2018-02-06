@@ -10,7 +10,7 @@ import recommender.metadata.Metadata;
 import recommender.metrics.Cosine;
 import recommender.metrics.Pearson;
 import recommender.metrics.SimilarityMeasures;
-import recommender.ratings.PredictionMatrix;
+import recommender.ratings.TestMatrix;
 import recommender.ratings.RatingMatrix;
 import recommender.ratings.TrainingMatrix;
 
@@ -24,7 +24,7 @@ public class UserAttributeKNN {
     ArrayList<Integer> knn;
     private int k;
     private TrainingMatrix trainingMatrix;
-    private PredictionMatrix predictionMatrix;
+    private TestMatrix predictionMatrix;
     private Metadata metadataRatings;
     private Metadata metadataProfile;
     private int[][] userxuserNfeaturesRatings;
@@ -61,7 +61,7 @@ public class UserAttributeKNN {
         knn = new ArrayList<>();
         this.trainingMatrix = trainingMatrix;
         this.k = k;
-        predictionMatrix = new PredictionMatrix(trainingMatrix.getIndexUserDbSystem(), trainingMatrix.getIndexItemDbSystem(), trainingMatrix.getIndexUserSystemDb(), trainingMatrix.getIndexItemSystemDb());
+        predictionMatrix = new TestMatrix(trainingMatrix.getIndexUserDbSystem(), trainingMatrix.getIndexItemDbSystem(), trainingMatrix.getIndexUserSystemDb(), trainingMatrix.getIndexItemSystemDb());
         nItems = trainingMatrix.getnItems();
         nUsers = trainingMatrix.getnUsers();
         trainBaselines();
