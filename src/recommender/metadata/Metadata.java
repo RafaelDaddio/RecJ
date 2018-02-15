@@ -1,28 +1,33 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package recommender.metadata;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Scanner;
+import java.io.*;
+import java.util.*;
 
 /**
  *
- * @author rafaeldaddio
+ * Class that implements a metadata matrix in the format entity x metadata.
+ *
+ * Converts metadata dataset IDs into an internal representation. Requires the
+ * entity's dataset-internal representation mapping.
+ *
+ * @author Rafael D'Addio
  */
 public class Metadata {
 
-    private HashMap<Integer, Integer> indexMetadataDbSystem;
-    private float[][] metadataMatrix;
-    protected int[] indexMetadataSystemDb;
-    private int entitySize;
-    private int metadataSize;
+    private HashMap<Integer, Integer> indexMetadataDbSystem; // metadata dataset - internal ID mapping
+    private float[][] metadataMatrix; // metadata matrix
+    private int[] indexMetadataSystemDb; // metadata internal - dataset ID mapping
+    private int entitySize; // number of entities (item or user)
+    private int metadataSize; // number of metadata (features)
 
+    /**
+     * Constructor.
+     *
+     * @param metadataFile file containing the metadata matrix in the form of
+     * triples: entity \t metadata \t score
+     * @param indexEntityDbSystem the entity's dataset-internal representation
+     * mapping
+     */
     public Metadata(String metadataFile, HashMap<Integer, Integer> indexEntityDbSystem) {
         indexMetadataDbSystem = new HashMap<>();
         mapMetadata(metadataFile);
@@ -34,6 +39,12 @@ public class Metadata {
         fillMetadataMatrix(metadataFile, indexEntityDbSystem);
     }
 
+    /**
+     * Creates the dataset-internal representation mapping for the metadata.
+     *
+     * @param metadataFile file containing the metadata matrix in the form of
+     * triples: entity \t metadata \t score
+     */
     private void mapMetadata(String metadataFile) {
         int count = 0;
         int entity;
@@ -61,6 +72,10 @@ public class Metadata {
 
     }
 
+    /**
+     * Fills the arrays responsible to convert internal representation to
+     * dataset IDs.
+     */
     private void fillMetadataIndexArray() {
 
         for (Integer key : getIndexMetadataDbSystem().keySet()) {
@@ -69,6 +84,14 @@ public class Metadata {
         }
     }
 
+    /**
+     * Fills the metadata matrix.
+     *
+     * @param metadataFile file containing the metadata matrix in the form of
+     * triples: entity \t metadata \t score
+     * @param indexEntityDbSystem the entity's dataset-internal representation
+     * mapping
+     */
     private void fillMetadataMatrix(String metadataFile, HashMap<Integer, Integer> indexEntityDbSystem) {
         try {
 
@@ -92,45 +115,76 @@ public class Metadata {
                 if (indexEntityDbSystem.containsKey(entity)) {
                     metadataMatrix[indexEntityDbSystem.get(entity)][getIndexMetadataDbSystem().get(metadata)] = rating;
                 }
+                scannerLine.close();
             }
+            scannerFile.close();
 
         } catch (FileNotFoundException e) {
             System.out.println("Metadata file NOT FOUND.");
         }
-        //System.out.println("Populou a matriz de Metadados");
     }
 
-    public void printMatrix(HashMap<Integer, Integer> indexEntityDbSystem, int[] indexItemSystemDb) {
-        int item;
+    /**
+     * Prints the metadata matrix on the console.
+     *
+     * @param indexEntityDbSystem the entity's dataset-internal representation
+     * mapping
+     * @param indexEntitySystemDb the entity's internal representation-dataset
+     * mapping
+     */
+    public void printMatrix(HashMap<Integer, Integer> indexEntityDbSystem, int[] indexEntitySystemDb) {
+        int entity;
         int metadata;
         float score;
         for (int i = 0; i < getEntitySize(); i++) {
             for (int j = 0; j < getMetadataSize(); j++) {
                 score = metadataMatrix[i][j];
-                item = indexItemSystemDb[i];
+                entity = indexEntitySystemDb[i];
                 metadata = indexMetadataSystemDb[j];
-                System.out.println(item + " " + metadata + " " + score);
+                System.out.println(entity + "\t" + metadata + "\t" + score);
 
             }
         }
     }
 
+    /**
+     * Returns an entity's metadata vector, defined by its ID.
+     *
+     * @param i the entity's internal ID
+     * @return the entity's metadata vector
+     */
     public float[] getEntity(int i) {
         return metadataMatrix[i];
     }
 
+    /**
+     *
+     * @return the number of entities.
+     */
     public int getEntitySize() {
         return entitySize;
     }
 
+    /**
+     *
+     * @return the number of metadata features
+     */
     public int getMetadataSize() {
         return metadataSize;
     }
-    
-    public float[][] getMatrix(){
+
+    /**
+     *
+     * @return the metadata matrix
+     */
+    public float[][] getMatrix() {
         return metadataMatrix;
     }
 
+    /**
+     *
+     * @return the metadata dataset-internal representation mapping
+     */
     public HashMap<Integer, Integer> getIndexMetadataDbSystem() {
         return indexMetadataDbSystem;
     }

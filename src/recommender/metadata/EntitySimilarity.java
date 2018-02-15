@@ -1,42 +1,45 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package recommender.metadata;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import recommender.metrics.Cosine;
-import recommender.metrics.Pearson;
-import recommender.metrics.SimilarityMeasures;
+import java.io.*;
+import recommender.metrics.*;
 import recommender.ratings.DatabaseMatrix;
 
 /**
+ * Class responsible for calculating an entity-entity similarity matrix.
  *
- * @author rafaeldaddio
+ * There's an option available for applying a shrinkage towards zero in the
+ * similarity score, depending on the number of features in common on two entity
+ * vectors. The more features they have in common, less shrunk is their
+ * similarity. This shrinkage is based on the Equation 2 of the following paper:
+ *
+ * Yehud Koren: <a href="https://dl.acm.org/citation.cfm?id=1644874">Factor in
+ * the Neighbors: Scalable and Accurate Collaborative Filtering</a>,
+ * Transactions on Knowledge Discovery from Data (TKDD), 2010.
+ *
+ * @author Rafael D'Addio
  */
 public class EntitySimilarity {
 
-    private Metadata metadata;
-    private int[][] itemxItemNfeatures;
-    private double[][] itemxItemSimilarityMatrix;
-    private SimilarityMeasures sim;
-    private final int regNeighbor = 100;
+    private Metadata metadata;  //metadata matrix
+    private int[][] EntityxEntityNfeatures; //entity x entity matrix containing number of features in common for similarity shrinkage
+    private double[][] EntityxEntitySimilarityMatrix; // entity x entity similarity matrix
+    private SimilarityMeasures sim; //similarity metric
+    private int regNeighbor = 100; // regularization constant
 
-    /*
-     similarityOption:
-     0 = cosine
-     1 = pearson
-     2 = semanticSimilarity
+    /**
+     * Constructor.
+     *
+     * @param metadata a Metadata object containing a metadata matrix
+     * @param similarityOption option selecting which similarity to use: 0 =
+     * cosine; 1 = pearson
+     * @param shrinkOption option activating shrunk similarity: false =
+     * inactive; true = active
      */
-    public EntitySimilarity(Metadata metadata, int similarityOption) {
+    public EntitySimilarity(Metadata metadata, int similarityOption, boolean shrinkOption) {
 
         this.metadata = metadata;
-        itemxItemSimilarityMatrix = new double[metadata.getEntitySize()][metadata.getEntitySize()];
-        itemxItemNfeatures = new int[metadata.getEntitySize()][metadata.getEntitySize()];
+        EntityxEntitySimilarityMatrix = new double[metadata.getEntitySize()][metadata.getEntitySize()];
+        EntityxEntityNfeatures = new int[metadata.getEntitySize()][metadata.getEntitySize()];
         switch (similarityOption) {
             case 0:
                 sim = new Cosine();
@@ -48,57 +51,100 @@ public class EntitySimilarity {
                 System.out.println("Invalid similarity");
                 break;
         }
-        computeSimilarities();
+        computeSimilarities(shrinkOption);
     }
 
-    private int computeNFeatures(float[] itemA, float[] itemB) {
+    /**
+     * Counts the number of features in common between two entities.
+     *
+     * @param entityA either a user or an item metadata vector
+     * @param entityB either a user or an item metadata vector
+     * @return the number of features
+     */
+    private int computeNFeatures(float[] entityA, float[] entityB) {
         int nfeatures = 0;
-        for (int i = 0; i < itemA.length; i++) {
-            if ((itemA[i] != 0) || (itemB[i] != 0)) {
+        for (int i = 0; i < entityA.length; i++) {
+            if ((entityA[i] != 0) || (entityB[i] != 0)) {
                 nfeatures++;
             }
         }
         return nfeatures;
     }
 
+    /**
+     * Fills the entity x entity matrix with the number of features in common.
+     */
     private void fillNFeaturesMatrix() {
 
         for (int i = 0; i < metadata.getEntitySize(); i++) {
             for (int j = 0; j <= i; j++) {
                 if (i != j) {
-                    itemxItemNfeatures[i][j] = computeNFeatures(metadata.getEntity(i), metadata.getEntity(j));
-                    itemxItemNfeatures[j][i] = itemxItemNfeatures[i][j];
+                    EntityxEntityNfeatures[i][j] = computeNFeatures(metadata.getEntity(i), metadata.getEntity(j));
+                    EntityxEntityNfeatures[j][i] = EntityxEntityNfeatures[i][j];
                 }
             }
         }
     }
 
-    private void computeSimilarities() {
-        fillNFeaturesMatrix();
+    /**
+     * Computes and fills the entity x entity similarity matrix, whether with or
+     * without the shrinkage.
+     *
+     * @param shrinkOption option activating shrunk similarity: false =
+     * inactive; true = active
+     */
+    private void computeSimilarities(boolean shrinkOption) {
         for (int i = 0; i < metadata.getEntitySize(); i++) {
             for (int j = 0; j <= i; j++) {
-                itemxItemSimilarityMatrix[i][j] = 0;
-                itemxItemSimilarityMatrix[j][i] = 0;
+                EntityxEntitySimilarityMatrix[i][j] = 0;
+                EntityxEntitySimilarityMatrix[j][i] = 0;
             }
         }
-        double nfeatures = 0;
-        for (int i = 0; i < metadata.getEntitySize(); i++) {
-            for (int j = 0; j <= i; j++) {
-                if (i != j) {
-                    nfeatures = itemxItemNfeatures[i][j];
-                    itemxItemSimilarityMatrix[i][j] = (nfeatures / (nfeatures + regNeighbor)) * sim.calcSimilarity(metadata.getEntity(i), metadata.getEntity(j));
-                    itemxItemSimilarityMatrix[j][i] = getItemxItemSimilarityMatrix()[i][j];
-                } else {
-                    itemxItemSimilarityMatrix[i][j] = 0;
-                }
+        //with shrinkage
+        if (shrinkOption) {
+            fillNFeaturesMatrix();
+            double nfeatures = 0;
 
+            //fills the matrix, with calculation being done only to the lower triangular matrix to boost processing
+            for (int i = 0; i < metadata.getEntitySize(); i++) {
+                for (int j = 0; j <= i; j++) {
+                    if (i != j) {
+                        nfeatures = EntityxEntityNfeatures[i][j];
+                        EntityxEntitySimilarityMatrix[i][j] = (nfeatures / (nfeatures + regNeighbor)) * sim.calcSimilarity(metadata.getEntity(i), metadata.getEntity(j));
+                        EntityxEntitySimilarityMatrix[j][i] = getEntityxEntitySimilarityMatrix()[i][j];
+                    } else {
+                        EntityxEntitySimilarityMatrix[i][j] = 0;
+                    }
+                }
             }
-            //System.out.println("Calculou similaridade de " + i);
+
+        } //without shrinkage
+        else {
+
+            //fills the matrix, with calculation being done only to the lower triangular matrix to boost processing
+            for (int i = 0; i < metadata.getEntitySize(); i++) {
+                for (int j = 0; j <= i; j++) {
+                    if (i != j) {
+                        EntityxEntitySimilarityMatrix[i][j] = sim.calcSimilarity(metadata.getEntity(i), metadata.getEntity(j));
+                        EntityxEntitySimilarityMatrix[j][i] = getEntityxEntitySimilarityMatrix()[i][j];
+                    } else {
+                        EntityxEntitySimilarityMatrix[i][j] = 0;
+                    }
+                }
+            }
 
         }
     }
-    
-    public void writeSimilarity(String similarityFile, DatabaseMatrix dbMatrix){
+
+    /**
+     * Writes the similarity matrix in a file in the for entityA \t entityB \t
+     * similarity
+     *
+     * @param similarityFile the file to save the similarity matrix
+     * @param dbMatrix object with database - internal representation mappings
+     * @param entityOption whether the entity it is 1 - item; 0 - user
+     */
+    public void writeSimilarity(String similarityFile, DatabaseMatrix dbMatrix, int entityOption) {
         try {
             File results = new File(similarityFile);
             if (!results.exists()) {
@@ -109,19 +155,37 @@ public class EntitySimilarity {
 
             for (int i = 0; i < metadata.getEntitySize(); i++) {
                 for (int j = 0; j <= i; j++) {
-                    if(j != i){
-                        bufferedWriter.write(dbMatrix.getIndexItemSystemDb()[i]+ "\t"+ dbMatrix.getIndexItemSystemDb()[j] + "\t" + itemxItemSimilarityMatrix[i][j]);
+                    if (j != i) {
+                        //writes entity-entity similarity, converting internal item or user IDs to dataset IDs
+                        if (entityOption == 1) {
+                            bufferedWriter.write(dbMatrix.getIndexItemSystemDb()[i] + "\t" + dbMatrix.getIndexItemSystemDb()[j] + "\t" + EntityxEntitySimilarityMatrix[i][j]);
+                        } else {
+                            bufferedWriter.write(dbMatrix.getIndexUserSystemDb()[i] + "\t" + dbMatrix.getIndexUserSystemDb()[j] + "\t" + EntityxEntitySimilarityMatrix[i][j]);
+                        }
                         bufferedWriter.write("\n");
                         bufferedWriter.flush();
                     }
                 }
             }
+            bufferedWriter.close();
+            fileWriter.close();
         } catch (IOException e) {
         }
     }
 
-    public double[][] getItemxItemSimilarityMatrix() {
-        return itemxItemSimilarityMatrix;
+    /**
+     *
+     * @return the similarity matrix
+     */
+    public double[][] getEntityxEntitySimilarityMatrix() {
+        return EntityxEntitySimilarityMatrix;
+    }
+
+    /**
+     * @param regNeighbor the regularization constant value to set
+     */
+    public void setRegNeighbor(int regNeighbor) {
+        this.regNeighbor = regNeighbor;
     }
 
 }

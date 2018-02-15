@@ -1,18 +1,19 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package recommender.metrics;
 
 /**
+ * Implementation of the Pearson correlation coefficient, which produces a
+ * similarity score between -1 and 1.
  *
- * @author rafaeldaddio
+ * See <a
+ * href="https://en.wikipedia.org/wiki/Pearson_correlation_coefficient">Wikipedia
+ * page</a> for more details about this metric.
+ *
+ * @author Rafael D'Addio
  */
 public class Pearson implements SimilarityMeasures {
 
     @Override
-    public double calcSimilarity(float[] itemA, float[] itemB) {
+    public double calcSimilarity(float[] entityA, float[] entityB) {
         double pearson = 0;
         double meanA = 0;
         double meanB = 0;
@@ -20,20 +21,22 @@ public class Pearson implements SimilarityMeasures {
         double sumA2 = 0;
         double sumB2 = 0;
 
-        for (int i = 0; i < itemA.length; i++) {
-            meanA += itemA[i];
-            meanB += itemB[i];
+        //calculate mean value for entityA and entityB
+        for (int i = 0; i < entityA.length; i++) {
+            meanA += entityA[i];
+            meanB += entityB[i];
         }
-        meanA = meanA / itemA.length;
-        meanB = meanB / itemB.length;
+        meanA = meanA / entityA.length;
+        meanB = meanB / entityB.length;
 
-        for (int i = 0; i < itemA.length; i++) {
-            sumAxB += (itemA[i] - meanA) * (itemB[i] - meanB);
-            sumA2 += (itemA[i] - meanA) * (itemA[i] - meanA);
-            sumB2 += (itemB[i] - meanB) * (itemB[i] - meanB);
+        // calculate formula
+        for (int i = 0; i < entityA.length; i++) {
+            sumAxB += (entityA[i] - meanA) * (entityB[i] - meanB); // the dividend
+            sumA2 += (entityA[i] - meanA) * (entityA[i] - meanA); //part of entityA of the factor
+            sumB2 += (entityB[i] - meanB) * (entityB[i] - meanB); //part of entityB of the factor
         }
 
-        double sqrtA2xB2 = Math.sqrt(sumA2 * sumB2);
+        double sqrtA2xB2 = Math.sqrt(sumA2 * sumB2); // the factor
         if (sqrtA2xB2 == 0) {
             sqrtA2xB2 = 1;
         }

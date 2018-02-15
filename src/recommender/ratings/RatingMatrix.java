@@ -1,24 +1,25 @@
 package recommender.ratings;
 
 import java.util.*;
+
 /**
  * Superclass that contains generic methods for all rating matrices classes.
- * 
+ *
  * @author Rafael D'Addio
  */
 public class RatingMatrix {
 
- 
-    protected HashMap<Integer, Integer> indexUserDbSystem, indexItemDbSystem;
-    protected int[] indexUserSystemDb, indexItemSystemDb;
-    protected double[][] ratingMatrix;
-    private ArrayList<ArrayList<Integer>> itemInteractionLists, userInteractionLists;
-    protected int nItems, nUsers;
+    protected HashMap<Integer, Integer> indexUserDbSystem, indexItemDbSystem; // the item and user dataset - internal ID mappings
+    protected int[] indexUserSystemDb, indexItemSystemDb; // the item and user internal - dataset mappings
+    protected double[][] ratingMatrix; // the rating matrix
+    private ArrayList<ArrayList<Integer>> itemInteractionLists, userInteractionLists; // item and user interaction lists
+    protected int nItems, nUsers; //the number of items and users
 
     /**
      * Constructor.
-     * 
-     * Instantiates objects responsible for converting user and items ids into internal sequential ids, and lists of user/item interactions.
+     *
+     * Instantiates objects responsible for converting user and items ids into
+     * internal sequential ids, and lists of user/item interactions.
      */
     public RatingMatrix() {
         indexUserDbSystem = new HashMap<Integer, Integer>();
@@ -35,14 +36,14 @@ public class RatingMatrix {
         for (int u = 0; u < nUsers; u++) {
             ArrayList<Integer> user = new ArrayList<>();
             for (int i = 0; i < nItems; i++) {
-                if(ratingMatrix[u][i] != -1){
+                if (ratingMatrix[u][i] != -1) {
                     user.add(i);
                 }
             }
             getUserInteractionLists().add(user);
         }
     }
-    
+
     /**
      * Creates items lists of interactions.
      */
@@ -50,7 +51,7 @@ public class RatingMatrix {
         for (int i = 0; i < nItems; i++) {
             ArrayList<Integer> item = new ArrayList<>();
             for (int u = 0; u < nUsers; u++) {
-                if(ratingMatrix[u][i] != -1){
+                if (ratingMatrix[u][i] != -1) {
                     item.add(u);
                 }
             }
@@ -60,7 +61,7 @@ public class RatingMatrix {
 
     /**
      *
-     * @return the rating matrix.
+     * @return the rating matrix
      */
     public double[][] getMatrix() {
         return ratingMatrix;
@@ -68,6 +69,7 @@ public class RatingMatrix {
 
     /**
      * Returns a value for a user/item pair.
+     *
      * @param user the user id
      * @param item the item id
      * @return the rating of the pair
@@ -77,7 +79,8 @@ public class RatingMatrix {
     }
 
     /**
-     * Prints the whole matrix on console in the format: userID \t itemID \t ratings
+     * Prints the whole matrix on console in the format: userID \t itemID \t
+     * ratings
      */
     public void printMatrix() {
         int user;
@@ -96,7 +99,8 @@ public class RatingMatrix {
 
     /**
      *
-     * @return the hashmap containing the conversion of dataset user id to internal id
+     * @return the hashmap containing the conversion of dataset user id to
+     * internal id
      */
     public HashMap<Integer, Integer> getIndexUserDbSystem() {
         return indexUserDbSystem;
@@ -104,7 +108,8 @@ public class RatingMatrix {
 
     /**
      *
-     * @return the hashmap containing the conversion of dataset item id to internal id
+     * @return the hashmap containing the conversion of dataset item id to
+     * internal id
      */
     public HashMap<Integer, Integer> getIndexItemDbSystem() {
         return indexItemDbSystem;
@@ -112,7 +117,8 @@ public class RatingMatrix {
 
     /**
      *
-     * @return the hashmap containing the conversion of internal user id to dataset id
+     * @return the hashmap containing the conversion of internal user id to
+     * dataset id
      */
     public int[] getIndexUserSystemDb() {
         return indexUserSystemDb;
@@ -120,7 +126,8 @@ public class RatingMatrix {
 
     /**
      *
-     * @return the hashmap containing the conversion of internal item to dataset id
+     * @return the hashmap containing the conversion of internal item to dataset
+     * id
      */
     public int[] getIndexItemSystemDb() {
         return indexItemSystemDb;
@@ -143,8 +150,8 @@ public class RatingMatrix {
     }
 
     /**
-     * sets a rating for a given user/item pair
-     * 
+     * sets a rating for a given user/item pair.
+     *
      * @param user the user id
      * @param item the item id
      * @param rating the rating score

@@ -3,19 +3,25 @@ package recommender.ratings;
 import java.util.HashMap;
 
 /**
- * Class that implements the test matrix
- * 
+ * Class that implements the test matrix.
+ *
+ * Constructs a test user x item matrix based on internal IDs.
+ *
  * @author Rafael D'Addio
  */
 public class TestMatrix extends RatingMatrix {
 
     /**
-     * Constructor
-     *   
-     * @param indexUserDbSystem the object containing the mapping of users dataset ids to internal representation
-     * @param indexItemDbSystem the object containing the mapping of items dataset ids to internal representation
-     * @param indexUserSystemDb the object containing the mapping of users internal representation to dataset ids
-     * @param indexItemSystemDb the object containing the mapping of items internal representation to dataset ids
+     * Constructor.
+     *
+     * @param indexUserDbSystem the object containing the mapping of users
+     * dataset ids to internal representation
+     * @param indexItemDbSystem the object containing the mapping of items
+     * dataset ids to internal representation
+     * @param indexUserSystemDb the object containing the mapping of users
+     * internal representation to dataset ids
+     * @param indexItemSystemDb the object containing the mapping of items
+     * internal representation to dataset ids
      */
     public TestMatrix(HashMap<Integer, Integer> indexUserDbSystem, HashMap<Integer, Integer> indexItemDbSystem, int[] indexUserSystemDb, int[] indexItemSystemDb) {
         super();
@@ -26,10 +32,10 @@ public class TestMatrix extends RatingMatrix {
         this.indexUserSystemDb = indexUserSystemDb;
         this.indexItemSystemDb = indexItemSystemDb;
         ratingMatrix = new double[nUsers][nItems];
-        fillPredictionMatrix();
+        fillTestMatrix();
     }
 
-    private void fillPredictionMatrix() {
+    private void fillTestMatrix() {
 
         for (int i = 0; i < nUsers; i++) {
             for (int j = 0; j < nItems; j++) {

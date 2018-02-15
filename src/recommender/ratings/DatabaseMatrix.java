@@ -4,17 +4,17 @@ import java.io.*;
 import java.util.*;
 
 /**
- * Class that converts and stores user and item dataset and internal IDs
- * 
- * This class is required in order to construct training and test matrices. Extends RatingsMatrix class.
- * 
+ * Class that converts and stores user/item dataset and internal IDs.
+ *
+ * This class is required in order to construct training and test matrices.
+ *
  * @author Rafael D'Addio
  */
 public class DatabaseMatrix extends RatingMatrix {
 
     /**
-     * Constructor
-     * 
+     * Constructor.
+     *
      * @param matrixFile the full dataset file
      */
     public DatabaseMatrix(String matrixFile) {
@@ -29,7 +29,7 @@ public class DatabaseMatrix extends RatingMatrix {
 
     /**
      * Converts user and items dataset IDs to an internal representation.
-     * 
+     *
      * @param ratingsFile the full dataset file
      */
     private void convertUserItemID(String ratingsFile) {
@@ -53,7 +53,9 @@ public class DatabaseMatrix extends RatingMatrix {
                     getIndexItemDbSystem().put(item, iCount);
                     iCount++;
                 }
+                scannerLine.close();
             }
+            scannerFile.close();
 
         } catch (FileNotFoundException e) {
             System.out.println("Ratings file NOT FOUND.");
@@ -61,7 +63,8 @@ public class DatabaseMatrix extends RatingMatrix {
     }
 
     /**
-     * Fills the arrays responsible to convert internal representation to dataset IDs 
+     * Fills the arrays responsible to convert internal representation to
+     * dataset IDs.
      */
     private void fillUserItemIndexArray() {
 

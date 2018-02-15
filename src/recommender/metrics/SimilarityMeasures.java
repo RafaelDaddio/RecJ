@@ -1,17 +1,20 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package recommender.metrics;
 
 /**
+ * Interface responsible to define the method which should be implemented in all
+ * similarity metrics
  *
- * @author rafaeldaddio
+ * @author Rafael D'Addio
  */
 public interface SimilarityMeasures {
-    
-    public double calcSimilarity(float[] itemA, float[] itemB);
-    
+
+    /**
+     * Method for calculating similarity
+     *
+     * @param entityA either a user or an item metadata vector
+     * @param entityB either a user or an item metadata vector
+     * @return a similarity score
+     */
+    public double calcSimilarity(float[] entityA, float[] entityB);
+
 }
