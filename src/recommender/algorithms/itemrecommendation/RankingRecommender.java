@@ -1,39 +1,42 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package recommender.algorithms.itemrecommendation;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import recommender.ratings.TrainingMatrix;
 
 /**
+ * Class that implements attributes and methods common to all item
+ * recommendation algorithms.
  *
- * @author rafaeldaddio
+ *
+ * @author Rafael D'Addio
  */
 public class RankingRecommender {
-    
-    protected double[][] scoreMatrix;
-    protected int nItems;
-    protected int nUsers;
-    protected int rankingSize;
-    protected long executionTime;    
-    protected TrainingMatrix trainingMatrix;
 
-    public RankingRecommender(TrainingMatrix trainingMatrix, int rankingSize){
+    protected TrainingMatrix trainingMatrix; // the training matrix 
+    protected double[][] scoreMatrix; // the matrix with scores to rank
+    protected final int nItems, nUsers; //total number of items and users
+    protected int rankingSize; // the ranking size
+    protected long executionTime; // execution time, measured in milliseconds
+
+    /**
+     * Constructor.
+     *
+     * @param trainingMatrix the object containing the training matrix
+     * @param rankingSize the size of the ranking that will be produced
+     */
+    public RankingRecommender(TrainingMatrix trainingMatrix, int rankingSize) {
         this.trainingMatrix = trainingMatrix;
         nItems = trainingMatrix.getnItems();
         nUsers = trainingMatrix.getnUsers();
-        scoreMatrix = new double[nUsers][nItems];        
-        fillScoreMatrix();        
-        this.rankingSize = rankingSize;        
-    }    
-    
+        scoreMatrix = new double[nUsers][nItems];
+        fillScoreMatrix();
+        this.rankingSize = rankingSize;
+    }
+
+    /**
+     * Fills the score matrix with zero.
+     *
+     */
     private void fillScoreMatrix() {
         for (int i = 0; i < nUsers; i++) {
             for (int j = 0; j < nItems; j++) {
@@ -41,14 +44,22 @@ public class RankingRecommender {
             }
         }
     }
-    
-    public void writeRecommendations(String recomendationPath) {
-        double big = 2;
-        double small = -2;
-        int id = -1;
+
+    /**
+     * Writes the rankings in a file.
+     *
+     * Sorts scores for each user and writes those with higher scores up to the
+     * size of the ranking. Writes the rankings in the format user \t item \t
+     * score.
+     *
+     * @param recomendationFile the file path which the rankings will be written
+     */
+    public void writeRecommendations(String recomendationFile) {
+        double big, small;
+        int id;
 
         try {
-            File recomendation = new File(recomendationPath);
+            File recomendation = new File(recomendationFile);
             if (!recomendation.exists()) {
                 recomendation.createNewFile();
             } else {
@@ -70,12 +81,11 @@ public class RankingRecommender {
                                 small = scoreMatrix[u][i];
                                 id = i;
                             }
-
                         }
                     }
                     small = -20000;
                     if (id != -1) {
-                        bufferedWriter.write(trainingMatrix.getIndexUserSystemDb()[u] + " " + trainingMatrix.getIndexItemSystemDb()[id] + " " + scoreMatrix[u][id]);
+                        bufferedWriter.write(trainingMatrix.getIndexUserSystemDb()[u] + "\t" + trainingMatrix.getIndexItemSystemDb()[id] + "\t" + scoreMatrix[u][id]);
                         bufferedWriter.write("\n");
 
                         big = scoreMatrix[u][id];
@@ -84,16 +94,17 @@ public class RankingRecommender {
                 }
             }
             bufferedWriter.close();
+            fileWriter.close();
         } catch (IOException e) {
-            System.out.println("Error.");
+            System.out.println("Error writing rankings.");
         }
     }
-    
+
     /**
      * @return the executionTime
      */
     public long getExecutionTime() {
         return executionTime;
     }
-    
+
 }

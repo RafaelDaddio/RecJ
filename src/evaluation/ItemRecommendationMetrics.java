@@ -180,18 +180,19 @@ public class ItemRecommendationMetrics {
      * @return the map score
      */
     public double mapAtK(int rankSize) {
-        double map = 0;
+        double map = 0, rank;
 
         //for each user ranking, computes its MAP
         for (int i = 0; i < usersRankings.size(); i++) {
             double apUser = 0, hits = 0;
+            rank = rankSize;
             // if K is larger than the size of the ranking, K = ranking size
-            if (rankSize > usersRankings.get(i).getRanking().size()) {
-                rankSize = usersRankings.get(i).getRanking().size();
+            if (rank > usersRankings.get(i).getRanking().size()) {
+                rank = usersRankings.get(i).getRanking().size();
             }
             //for each position in the ranking, checks if it is relevant
             //if it is, calculates the precision at that point and sum it with the acumulated precisions
-            for (int j = 0; j < rankSize; j++) {
+            for (int j = 0; j < rank; j++) {
                 String candidate = usersRankings.get(i).getRanking().get(j).getUser() + "," + usersRankings.get(i).getRanking().get(j).getItem();
                 if (test.contains(candidate)) {
                     hits++;

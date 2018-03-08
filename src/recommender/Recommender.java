@@ -17,9 +17,9 @@ import java.io.*;
  *
  * Here in the main method you should put all coding in order to use the
  * algorithms implemented in this framework. We provide a commented example of a
- * ItemAttributeKNN execution for one train/test setting. We do not have data
- * splitting or cross-folding routines implemented yet, you should provide the
- * file paths in the appropriated space.
+ * rating prediction ItemAttributeKNN execution for one train/test setting. We
+ * do not have data splitting or cross-folding routines implemented yet, you
+ * should provide the file paths in the appropriated space.
  */
 public class Recommender {
 
@@ -41,7 +41,7 @@ public class Recommender {
         Metadata metadata = new Metadata(metadataFile, dbMatrix.getIndexItemDbSystem()); //reads the metadata file
         EntitySimilarity similarityPearson = new EntitySimilarity(metadata, 1, true); //calculates the similarity: 0 - cosine; 1 - pearson; apply shrinkage: true or false
 
-        /*running a recommender - ItemAttributeKNN example (for further examples of how to run each algorithm, refer to its class)*/
+        /*running a recommender - rating prediction ItemAttributeKNN example (for further examples of how to run each algorithm, refer to its class)*/
         ItemAttributeKNN knn = new ItemAttributeKNN(test, training, 20, 1, similarityPearson.getEntityxEntitySimilarityMatrix()); //ItemAttributeKNN receives: test, k, predictionOption (0: all, 1: only test), and the similarity metrics
         knn.recommender();
         String recommendations = ""; //place here the file where recommendation will be stored

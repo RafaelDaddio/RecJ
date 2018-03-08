@@ -154,7 +154,7 @@ public class EntitySimilarity {
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
 
             for (int i = 0; i < metadata.getEntitySize(); i++) {
-                for (int j = 0; j <= i; j++) {
+                for (int j = 0; j < metadata.getEntitySize(); j++) {
                     if (j != i) {
                         //writes entity-entity similarity, converting internal item or user IDs to dataset IDs
                         if (entityOption == 1) {
